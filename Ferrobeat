@@ -1,0 +1,272 @@
+// =======================
+// Ferrobeat
+// =======================
+
+setcps(135/60/4)
+
+const key = "F:phrygian"
+const bank = "RolandTR909"
+
+
+// Absorptionskanten in eV
+
+//         FeL3 FeL2 CoL3 CoL2 FeL1 NiL3 NiL2 CoL1 NiL1 GdM5 GdM4 TbM5 TbM4 DyM4 DyM4 HoM5 HoM4
+const E = " 707  720  778  793  845  853  870  925 1009 1190 1222 1241 1276 1293 1333 1351 1392"
+const f = " 337  327  322  313  309  300  295  288  244  224  210  206  204  192  188  174  171"
+
+const ferroBeat = (egain, fgain) => stack(
+  s("bd*4")
+    .bank(bank)
+    .gain(0.5),
+
+  s("~ hh ~ oh ~ hh ~ oh")
+    .bank(bank)
+    .gain(0.5),
+
+  s("hh*16")
+    .bank(bank)
+    .gain(0),
+
+  s("~ cp")
+    .bank(bank)
+    .gain(0.5),
+
+//E and f run against each other. one up, one down.
+  freq(E)
+    .s("supersaw")
+    .gain(egain)
+    .scale(key),
+
+  freq(f)
+    .s("supersaw")
+    .gain(fgain)
+    .scale(key)
+)
+
+const ferronoise = (key,gain) =>
+
+//Fe    L3  L2
+  n("<7 0 7 7 2 0>*16")
+    .scale(key)
+    .trans(-12)
+    .s("sawtooth")
+    .gain(gain)
+
+const beepbeat = (key,octy,gain) =>
+  note("[0 1] ~ [0 3] ~")
+    .scale(key)
+    .octave(octy)
+    .s("supersaw")
+    .gain(gain)
+
+const intro = (egain,fgain) => stack(
+  ferroBeat(egain,fgain),
+  
+  note("0 ~ ~ ~")
+    .scale(key)
+    .octave(3)
+    .s("sawtooth")
+    .cutoff(250)
+    .gain(0.5)
+)
+
+const buildup = stack(
+  ferroBeat(0.4,0.5),
+
+  s("hh*16")
+    .bank(bank)
+    .gain(0.35),
+
+  note("0 0 3 0")
+    .scale(key)
+    .octave(3)
+    .s("sawtooth")
+    .cutoff(650)
+    .gain(0.35)
+    .every(2, x => x.fast(2))
+)
+
+const part1 = (octy, hhs) => stack(
+  ferroBeat(0.5,0.5),
+
+  s("bd*4").gain(1),
+
+  s("~ hh ~ hh")
+    .bank(bank)
+    .gain(0.6),
+
+  s("hh")
+    .bank(bank)
+    .fast(hhs)
+    .gain(0.55),
+
+  s("~ cp ~ cp")
+    .bank(bank)
+    .gain(0.45),
+  
+//42?
+  note("0 1 0 1 0 1 0")
+    .scale(key)
+    .octave(3)
+    .s("sawtooth")
+    .cutoff(1200)
+    .decay(0.15)
+    .gain(0.4),
+)
+
+const part2 = (octy, hhs) => stack(
+  ferroBeat(0.6,0.4),
+
+  s("bd*4").gain(1),
+
+  s("~ hh ~ hh")
+    .gain(0.6),
+
+  s("hh")
+    .fast(hhs)
+    .gain(0.6),
+
+  s("~ cp ~ cp")
+    .gain(0.45),
+
+  note("[0 1] ~ [0 3] ~")
+    .scale(key)
+    .octave(octy)
+    .s("supersaw")
+    .gain(0.55),
+
+  note("0 ~ 0 3")
+    .scale(key)
+    .octave(2)
+    .s("sawtooth")
+    .cutoff(700)
+    .decay(0.18)
+    .gain(0.65)
+)
+
+const part3 = (octy, hhs, pattern) => stack(
+  ferroBeat(0.3,0.5),
+
+  s("bd*4").gain(1),
+
+  s("~ hh ~ hh").gain(0.6),
+  s("hh").fast(hhs).gain(0.65),
+  s("~ cp ~ cp").gain(0.45),
+
+  beepbeat(key,octy,0.5),
+
+  note(pattern)
+    .scale(key)
+    .octave(2)
+    .s("supersaw")
+    .decay(0.2)
+    .cutoff(3000)
+    .gain(1)
+)
+
+const part4 = (octy, hhs) => stack(
+  ferroBeat(0.3,0.5),
+
+  s("bd*4").gain(1),
+
+  s("~ hh ~ hh").gain(0.6),
+  s("hh").fast(hhs).gain(0.7),
+  s("~ cp ~ cp").gain(0.45),
+
+  ferronoise(key,1),
+  beepbeat(key,octy,0.6),
+)
+
+const part5 = (octy, hhs) => stack(
+  ferroBeat(0.2,0.5),
+
+  s("bd*4").gain(1),
+
+  s("~ hh ~ hh").gain(0.6),
+  s("hh").fast(hhs).gain(0.7),
+  s("~ cp ~ cp").gain(0.45),
+
+  ferronoise(key,1),
+  beepbeat(key,octy,0.9),
+)
+
+const breakdown = stack(
+
+  freq(E)
+    .s("supersaw")
+    .scale(key)
+    .gain(1)
+    .room(2)
+    .slow(2),
+
+  freq(f)
+    .s("sine")
+    .scale(key)
+    .gain(1)
+    .room(5)
+    .slow(2),
+
+  note("0 ~ ~ 0")
+    .scale(key)
+    .octave(2)
+    .s("sawtooth")
+    .cutoff(180)
+    .gain(0.35)
+    .room(1),
+
+  s("~ hh ~ hh"),
+
+  s("~ ~ cp ~")
+    .bank(bank)
+    .gain(0.18)
+    .room(0.7),
+
+  s("white")
+    .slow(4)
+    .gain(0.08)
+    .hpf(500)
+    .lpf(5000)
+    .room(0.8)
+)
+
+const outro = (egain,fgain,key,octy) => stack(
+  ferroBeat(egain,fgain),
+
+  s("~ hh ~ oh ~ hh ~ oh")
+    .gain(0.2),
+
+  note("0 ~ ~ ~")
+    .scale(key)
+    .octave(3)
+    .s("sawtooth")
+    .cutoff(250)
+    .gain(0.15),
+
+    ferronoise(key,0.5),
+    beepbeat(key,octy,0.5),
+)
+
+
+arrange(
+  [ 2,  intro(0,0.8)],
+  [ 2,  intro(0.8,0)],
+  [ 4,  intro(0.3,0.5)],
+  [ 8,  buildup],
+  [ 8,  part1(2, 8)],
+  [ 8,  part2(2, 16)],
+  [ 4,  breakdown],
+  [ 8,  part3(2, 16, "[0 1 0 1 0 -6 1 0]")],
+  [ 8,  part3(2, 16, "[0 1 0 1 0 0 1 0]")],
+  [16,  breakdown],
+  [ 8,  part3(2, 16, "[0 1 0 1 0 6 1 0]")],
+  [ 8,  part3(2, 16, "[0 1 0 1 0 12 1 0]")],
+  [ 8,  part4(2, 16)],
+  [ 8,  part4(2, 8)],
+  [ 8,  part5(2, 16)],
+  [ 4,  breakdown],
+  [16,  part5(2, 16)],
+  [ 8,  outro(0.3,0.5, 2, 16)],
+  [ 2,  outro(0.2,0.4, 2, 16)],
+  [ 2,  outro(0.1,0.2, 2, 16)],
+  [ 2,  outro(0,0.0)],
+)
